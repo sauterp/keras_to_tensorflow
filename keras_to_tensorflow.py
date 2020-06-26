@@ -1,4 +1,21 @@
 #!/usr/bin/env python
+
+# These custom objects are necessary for the model conversion to work.
+from keras_contrib.layers import CRF
+def create_custom_objects():
+    instanceHolder = {"instance": None}
+    class ClassWrapper(CRF):
+        def __init__(self, *args, **kwargs):
+            instanceHolder["instance"] = self
+            super(ClassWrapper, self).__init__(*args, **kwargs)
+    def loss(*args):
+        method = getattr(instanceHolder["instance"], "loss_function")
+        return method(*args)
+    def accuracy(*args):
+        method = getattr(instanceHolder["instance"], "accuracy")
+        return method(*args)
+    return {"ClassWrapper": ClassWrapper, "CRF": ClassWrapper, "loss": loss, "accuracy": accuracy}
+
 """
 Copyright (c) 2019, by the Authors: Amir H. Abdi
 This script is freely available under the MIT Public License.
@@ -60,7 +77,7 @@ def load_model(input_model_path, input_json_path=None, input_yaml_path=None):
         raise FileNotFoundError(
             'Model file `{}` does not exist.'.format(input_model_path))
     try:
-        model = keras.models.load_model(input_model_path)
+        model = keras.models.load_model(input_model_path, custom_objects=create_custom_objects())
         return model
     except FileNotFoundError as err:
         logging.error('Input mode file (%s) does not exist.', FLAGS.input_model)
@@ -72,7 +89,7 @@ def load_model(input_model_path, input_json_path=None, input_yaml_path=None):
                     'Model description json file `{}` does not exist.'.format(
                         input_json_path))
             try:
-                model = model_from_json(open(str(input_json_path)).read())
+                model = model_from_json(open(str(input_json_path)).read(), custom_objects=create_custom_objects())
                 model.load_weights(input_model_path)
                 return model
             except Exception as err:

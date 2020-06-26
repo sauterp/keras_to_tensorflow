@@ -1,3 +1,6 @@
+# Purpose
+This is a fork of https://github.com/amir-abdi/keras_to_tensorflow and serves as a submodule to https://github.com/sauterp/microNER. It is modified for that specific model and probably not useful for anything else.
+
 # Keras to TensorFlow
 The **keras_to_tensorflow** is a tool that converts a trained keras model into a ready-for-inference TensorFlow model. *The tool is NOT tailored for TensorFlow 2.0 it SEEMS to be working fine.*
 
